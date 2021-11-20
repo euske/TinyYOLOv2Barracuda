@@ -7,11 +7,11 @@ namespace TinyYoloV2
     // with the one defined in Common.hlsl.
     //
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct BoundingBox
+    public struct BoundingBox
     {
-        public readonly float x, y, w, h;
-        public readonly uint classIndex;
-        public readonly float score;
+        public float x, y, w, h;
+        public uint classIndex;
+        public float score;
 
         // sizeof(BoundingBox)
         public static int Size = 6 * sizeof(int);
