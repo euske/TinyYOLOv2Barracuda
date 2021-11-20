@@ -10,9 +10,6 @@ namespace TinyYoloV2
         public const int ClassCount = 80;
 
         public const int InputSize = ImageSize * ImageSize * 3;
-        //public const int TotalCells = CellsInRow * CellsInRow;
-        //public const int OutputPerCell = AnchorCount * (5 + ClassCount);
-        //public const int MaxBBoxes = TotalCells * AnchorCount;
 
         public static Vector2[] Anchors = new Vector2[] {
             new Vector2(81f, 82f),

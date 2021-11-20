@@ -67,21 +67,21 @@ public sealed class ObjectDetector : System.IDisposable
         // Output tensor (26x26x255)
         List<BoundingBox> cands = new List<BoundingBox>();
         using (var tensor = _worker.PeekOutput()) {
-            for (int i = 0; i < Config.CellsInRow; i++) {
-                for (int j = 0; j < Config.CellsInRow; j++) {
+            for (int y0 = 0; y0 < Config.CellsInRow; y0++) {
+                for (int x0 = 0; x0 < Config.CellsInRow; x0++) {
                     for (int k = 0; k < Config.AnchorCount; k++) {
                         Vector2 anchor = Config.Anchors[k];
                         int b = (5+Config.ClassCount) * k;
-                        float x = j + Sigmoid(tensor[0,i,j,b+0]);
-                        float y = i + Sigmoid(tensor[0,i,j,b+1]);
-                        float w = anchor.x * Mathf.Exp(tensor[0,i,j,b+2]);
-                        float h = anchor.y * Mathf.Exp(tensor[0,i,j,b+3]);
-                        float conf = Sigmoid(tensor[0,i,j,b+4]);
+                        float x = (x0 + Sigmoid(tensor[0,x0,y0,b+0])) / Config.CellsInRow;
+                        float y = (y0 + Sigmoid(tensor[0,x0,y0,b+1])) / Config.CellsInRow;
+                        float w = (anchor.x * Mathf.Exp(tensor[0,x0,y0,b+2])) / Config.ImageSize;
+                        float h = (anchor.y * Mathf.Exp(tensor[0,x0,y0,b+3])) / Config.ImageSize;
+                        float conf = Sigmoid(tensor[0,x0,y0,b+4]);
                         float totalProb = 0;
                         float maxProb = -1;
                         int maxIndex = 0;
                         for (int index = 0; index < Config.ClassCount; index++) {
-                            float p = Mathf.Exp(tensor[0,i,j,b+5+index]);
+                            float p = Mathf.Exp(tensor[0,x0,y0,b+5+index]);
                             if (maxProb < p) {
                                 maxProb = p; maxIndex = index;
                             }
@@ -90,15 +90,12 @@ public sealed class ObjectDetector : System.IDisposable
                         float score = conf * maxProb / totalProb;
                         if (scoreThreshold <= score) {
                             BoundingBox box = new BoundingBox {
-                                x = x / Config.CellsInRow,
-                                y = y / Config.CellsInRow,
-                                w = w / Config.ImageSize,
-                                h = h / Config.ImageSize,
+                                x = x-w/2, y = y-h/2,
+                                w = w, h = h,
                                 classIndex = (uint)maxIndex,
                                 score = score,
                             };
                             cands.Add(box);
-                            Debug.Log(box);
                         }
                     }
                 }
