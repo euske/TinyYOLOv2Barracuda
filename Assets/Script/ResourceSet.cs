@@ -9,7 +9,5 @@ namespace TinyYoloV2
     {
         public NNModel model;
         public ComputeShader preprocess;
-        public ComputeShader postprocess1;
-        public ComputeShader postprocess2;
     }
 }
