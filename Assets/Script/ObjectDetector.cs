@@ -65,19 +65,20 @@ public sealed class ObjectDetector : System.IDisposable
         }
 
         // Output tensor (26x26x255)
-        _objects.Clear();
+        List<BoundingBox> cands = new List<BoundingBox>();
         using (var tensor = _worker.PeekOutput()) {
             for (int i = 0; i < Config.CellsInRow; i++) {
                 for (int j = 0; j < Config.CellsInRow; j++) {
                     for (int k = 0; k < Config.AnchorCount; k++) {
-                        int b = Config.OutputPerCell * k;
+                        Vector2 anchor = Config.Anchors[k];
+                        int b = (5+Config.ClassCount) * k;
                         float x = j + Sigmoid(tensor[0,i,j,b+0]);
                         float y = i + Sigmoid(tensor[0,i,j,b+1]);
-                        float w = Config.Anchors[k].x * Mathf.Exp(tensor[0,i,j,b+2]);
-                        float h = Config.Anchors[k].y * Mathf.Exp(tensor[0,i,j,b+3]);
+                        float w = anchor.x * Mathf.Exp(tensor[0,i,j,b+2]);
+                        float h = anchor.y * Mathf.Exp(tensor[0,i,j,b+3]);
                         float conf = Sigmoid(tensor[0,i,j,b+4]);
                         float totalProb = 0;
-                        float maxProb = 0;
+                        float maxProb = -1;
                         int maxIndex = 0;
                         for (int index = 0; index < Config.ClassCount; index++) {
                             float p = Mathf.Exp(tensor[0,i,j,b+5+index]);
@@ -96,10 +97,38 @@ public sealed class ObjectDetector : System.IDisposable
                                 classIndex = (uint)maxIndex,
                                 score = score,
                             };
-                            _objects.Add(box);
+                            cands.Add(box);
+                            Debug.Log(box);
                         }
                     }
                 }
+            }
+        }
+
+        // Apply Soft-NMS.
+        _objects.Clear();
+        Dictionary<BoundingBox, float> cscore = new Dictionary<BoundingBox, float>();
+        foreach (BoundingBox box in cands) {
+            cscore[box] = box.score;
+        }
+        while (0 < cands.Count) {
+            // argmax(cscore[box])
+            float mscore = -1;
+            int mi = 0;
+            for (int i = 0; i < cands.Count; i++) {
+                float score = cscore[cands[i]];
+                if (mscore < score) {
+                    mscore = score; mi = i;
+                }
+            }
+            if (mscore < overlapThreshold) break;
+            BoundingBox box = cands[mi];
+            _objects.Add(box);
+            cands.RemoveAt(mi);
+            for (int i = 0; i < cands.Count; i++) {
+                BoundingBox b1 = cands[i];
+                float v = box.getIOU(b1);
+                cscore[b1] *= Mathf.Exp(-3*v*v);
             }
         }
     }
