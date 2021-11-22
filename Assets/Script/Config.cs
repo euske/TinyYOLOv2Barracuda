@@ -5,9 +5,7 @@ namespace TinyYoloV2
     public static class Config
     {
         public const int ImageSize = 416;
-        public const int CellsInRow = 13;
-        public const int AnchorCount = 5;
-        public const int ClassCount = 20;
+        public const int CellsInRow = 26;
 
         public const int InputSize = ImageSize * ImageSize * 3;
 
@@ -19,12 +17,12 @@ namespace TinyYoloV2
             new Vector2(16.62f, 10.52f),
         };
         private static Vector2[] _anchorsV3 = new Vector2[] {
-            new Vector2(81f, 82f),
-            new Vector2(135f, 169f),
-            new Vector2(344f, 319f),
+            new Vector2(81f/32, 82f/32),
+            new Vector2(135f/32, 169f/32),
+            new Vector2(344f/32, 319f/32),
         };
         public static Vector2[] GetAnchors() {
-            return _anchorsV2;
+            return _anchorsV3;
         }
 
         private static string[] _labelsV2 = new[]
@@ -118,8 +116,12 @@ namespace TinyYoloV2
             "hair drier",
             "toothbrush",
         };
+        public static string[] GetLabels() {
+            return _labelsV3;
+        }
 
-        public static string GetLabel(int index)
-          => _labelsV2[index];
+        public static string GetLabel(int index) {
+            return GetLabels()[index];
+        }
     }
 }
