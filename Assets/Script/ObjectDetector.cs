@@ -66,22 +66,23 @@ public sealed class ObjectDetector : System.IDisposable
 
         // Output tensor (26x26x255)
         List<BoundingBox> cands = new List<BoundingBox>();
+        Vector2[] anchors = Config.GetAnchors();
         using (var tensor = _worker.PeekOutput()) {
             for (int y0 = 0; y0 < Config.CellsInRow; y0++) {
                 for (int x0 = 0; x0 < Config.CellsInRow; x0++) {
-                    for (int k = 0; k < Config.AnchorCount; k++) {
-                        Vector2 anchor = Config.Anchors[k];
+                    for (int k = 0; k < anchors.Length; k++) {
+                        Vector2 anchor = anchors[k];
                         int b = (5+Config.ClassCount) * k;
-                        float x = (x0 + Sigmoid(tensor[0,x0,y0,b+0])) / Config.CellsInRow;
-                        float y = (y0 + Sigmoid(tensor[0,x0,y0,b+1])) / Config.CellsInRow;
-                        float w = (anchor.x * Mathf.Exp(tensor[0,x0,y0,b+2])) / Config.ImageSize;
-                        float h = (anchor.y * Mathf.Exp(tensor[0,x0,y0,b+3])) / Config.ImageSize;
-                        float conf = Sigmoid(tensor[0,x0,y0,b+4]);
+                        float x = (x0 + Sigmoid(tensor[0,y0,x0,b+0])) / Config.CellsInRow;
+                        float y = (y0 + Sigmoid(tensor[0,y0,x0,b+1])) / Config.CellsInRow;
+                        float w = (anchor.x * Mathf.Exp(tensor[0,y0,x0,b+2])) / Config.CellsInRow;
+                        float h = (anchor.y * Mathf.Exp(tensor[0,y0,x0,b+3])) / Config.CellsInRow;
+                        float conf = Sigmoid(tensor[0,y0,x0,b+4]);
                         float totalProb = 0;
                         float maxProb = -1;
                         int maxIndex = 0;
                         for (int index = 0; index < Config.ClassCount; index++) {
-                            float p = Mathf.Exp(tensor[0,x0,y0,b+5+index]);
+                            float p = Mathf.Exp(tensor[0,y0,x0,b+5+index]);
                             if (maxProb < p) {
                                 maxProb = p; maxIndex = index;
                             }
@@ -90,7 +91,7 @@ public sealed class ObjectDetector : System.IDisposable
                         float score = conf * maxProb / totalProb;
                         if (scoreThreshold <= score) {
                             BoundingBox box = new BoundingBox {
-                                x = x-w/2, y = y-h/2,
+                                x = x, y = y,
                                 w = w, h = h,
                                 classIndex = (uint)maxIndex,
                                 score = score,
