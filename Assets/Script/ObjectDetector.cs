@@ -68,28 +68,26 @@ public sealed class ObjectDetector : System.IDisposable
         List<BoundingBox> cands = new List<BoundingBox>();
         Vector2[] anchors = Config.GetAnchors();
         int classCount = Config.GetLabels().Length;
-        using (var tensor = _worker.PeekOutput()) {
+        using (var t = _worker.PeekOutput()) {
             for (int y0 = 0; y0 < Config.CellsInRow; y0++) {
                 for (int x0 = 0; x0 < Config.CellsInRow; x0++) {
                     for (int k = 0; k < anchors.Length; k++) {
                         Vector2 anchor = anchors[k];
                         int b = (5+classCount) * k;
-                        float x = (x0 + Sigmoid(tensor[0,y0,x0,b+0])) / Config.CellsInRow;
-                        float y = (y0 + Sigmoid(tensor[0,y0,x0,b+1])) / Config.CellsInRow;
-                        float w = (anchor.x * Mathf.Exp(tensor[0,y0,x0,b+2])) / Config.CellsInRow;
-                        float h = (anchor.y * Mathf.Exp(tensor[0,y0,x0,b+3])) / Config.CellsInRow;
-                        float conf = Sigmoid(tensor[0,y0,x0,b+4]);
-                        float totalProb = 0;
+                        float x = (x0 + Sigmoid(t[0,y0,x0,b+0])) / Config.CellsInRow;
+                        float y = (y0 + Sigmoid(t[0,y0,x0,b+1])) / Config.CellsInRow;
+                        float w = (anchor.x * Mathf.Exp(t[0,y0,x0,b+2])) / Config.CellsInRow;
+                        float h = (anchor.y * Mathf.Exp(t[0,y0,x0,b+3])) / Config.CellsInRow;
+                        float conf = Sigmoid(t[0,y0,x0,b+4]);
                         float maxProb = -1;
                         int maxIndex = 0;
                         for (int index = 0; index < classCount; index++) {
-                            float p = Mathf.Exp(tensor[0,y0,x0,b+5+index]);
+                            float p = Sigmoid(t[0,y0,x0,b+5+index]);
                             if (maxProb < p) {
                                 maxProb = p; maxIndex = index;
                             }
-                            totalProb += p;
                         }
-                        float score = conf * maxProb / totalProb;
+                        float score = conf * maxProb;
                         if (scoreThreshold <= score) {
                             BoundingBox box = new BoundingBox {
                                 x = x, y = y,

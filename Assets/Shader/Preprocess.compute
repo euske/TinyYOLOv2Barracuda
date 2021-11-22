@@ -22,7 +22,7 @@ void Preprocess(uint3 id : SV_DispatchThreadID)
     float2 duv_dy = float2(0, -1.0 / _ImageSize);
 
     // Texture sample
-    float3 rgb = tex2Dgrad(_Texture, uv, duv_dx, duv_dy).rgb * 255;
+    float3 rgb = tex2Dgrad(_Texture, uv, duv_dx, duv_dy).rgb;
 
     // Tensor element output
     uint offs = (id.y * _ImageSize + id.x) * 3;
