@@ -9,7 +9,6 @@ public sealed class ObjectDetector : System.IDisposable
     #region Internal objects
 
     ResourceSet _resources;
-    ComputeBuffer _preBuffer;
     IWorker _worker;
 
     #endregion
@@ -19,7 +18,6 @@ public sealed class ObjectDetector : System.IDisposable
     public ObjectDetector(ResourceSet resources)
     {
         _resources = resources;
-        _preBuffer = new ComputeBuffer(Config.InputSize, sizeof(float));
         _worker = ModelLoader.Load(_resources.model).CreateWorker();
     }
 
@@ -29,9 +27,6 @@ public sealed class ObjectDetector : System.IDisposable
 
     public void Dispose()
     {
-        _preBuffer?.Dispose();
-        _preBuffer = null;
-
         _worker?.Dispose();
         _worker = null;
     }
