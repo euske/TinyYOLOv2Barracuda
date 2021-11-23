@@ -51,16 +51,9 @@ public sealed class ObjectDetector : System.IDisposable
     public void ProcessImage
       (Texture sourceTexture, float scoreThreshold, float overlapThreshold)
     {
-        // Preprocessing
-        var pre = _resources.preprocess;
-        var imageSize = Config.ImageSize;
-        pre.SetTexture(0, "_Texture", sourceTexture);
-        pre.SetBuffer(0, "_Tensor", _preBuffer);
-        pre.SetInt("_ImageSize", imageSize);
-        pre.Dispatch(0, imageSize / 8, imageSize / 8, 1);
-
         // Run the YOLO model.
-        using (var tensor = new Tensor(1, imageSize, imageSize, 3, _preBuffer)) {
+        var data = new TextureAsTensorData(sourceTexture, 3);
+        using (var tensor = new Tensor(data.shape, data)) {
             _worker.Execute(tensor);
         }
 

@@ -8,7 +8,7 @@ sealed class VisualizerCpu : MonoBehaviour
     #region Editable attributes
 
     [SerializeField, Range(0, 1)] float _scoreThreshold = 0.1f;
-    [SerializeField, Range(0, 1)] float _overlapThreshold = 0.5f;
+    [SerializeField, Range(0, 1)] float _overlapThreshold = 0.2f;
     [SerializeField] ResourceSet _resources = null;
     [SerializeField] UI.RawImage _previewUI = null;
     [SerializeField] Marker _markerPrefab = null;
@@ -34,7 +34,7 @@ sealed class VisualizerCpu : MonoBehaviour
     {
         // Texture allocation
         _webcamRaw = new WebCamTexture();
-        _webcamBuffer = new RenderTexture(1080, 1080, 0);
+        _webcamBuffer = new RenderTexture(Config.ImageSize, Config.ImageSize, 0);
 
         _webcamRaw.Play();
         _previewUI.texture = _webcamBuffer;
@@ -78,13 +78,11 @@ sealed class VisualizerCpu : MonoBehaviour
 
         // Marker update
         var i = 0;
-
         foreach (var box in _detector.DetectedObjects)
         {
             if (i == _markers.Length) break;
             _markers[i++].SetAttributes(box);
         }
-
         for (; i < _markers.Length; i++) _markers[i].Hide();
     }
 

@@ -8,6 +8,5 @@ namespace TinyYoloV2
     public sealed class ResourceSet : ScriptableObject
     {
         public NNModel model;
-        public ComputeShader preprocess;
     }
 }
