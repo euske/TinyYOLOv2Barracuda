@@ -5,7 +5,7 @@
 Currently supports some random model for YOLOv3-tiny.
 
  * Implemented: inference with Barracuda 2.0.
- * Implemented: post-processing (soft-NMS).
+ * Implemented: post-processing in C# (soft-NMS).
  * Changed: v2 -> v3 input/output handling.
  * Removed: need of own preprocessing (Barracuda handles this).
 
