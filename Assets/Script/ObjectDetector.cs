@@ -56,7 +56,7 @@ public sealed class ObjectDetector : System.IDisposable
         List<BoundingBox> cands = new List<BoundingBox>();
         Vector2[] anchors = Config.GetAnchors();
         int classCount = Config.GetLabels().Length;
-        using (var t = _worker.PeekOutput()) {
+        using (var t = _worker.PeekOutput(Config.OutputName)) {
             for (int y0 = 0; y0 < Config.CellsInRow; y0++) {
                 for (int x0 = 0; x0 < Config.CellsInRow; x0++) {
                     for (int k = 0; k < anchors.Length; k++) {

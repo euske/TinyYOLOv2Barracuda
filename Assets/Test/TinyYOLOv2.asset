@@ -12,5 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d88389832f488944b888d5749841e75e, type: 3}
   m_Name: TinyYOLOv2
   m_EditorClassIdentifier: 
-  model: {fileID: 5022602860645237092, guid: 021629bdd8652c545b25daf3e1e8ece9, type: 3}
-  preprocess: {fileID: 7200000, guid: e1163b2e257e2cd47b48c45aec261784, type: 3}
+  model: {fileID: 5022602860645237092, guid: 923ea27154fc2d849971478cde5a9746, type: 3}
