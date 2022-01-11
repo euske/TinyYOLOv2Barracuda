@@ -8,7 +8,7 @@ namespace TinyYoloV2
         public const int CellsInRow = 26;
 
         public const int InputSize = ImageSize * ImageSize * 3;
-        public const string OutputName = "yolo_output_1";
+        public const string OutputName = "023_convolutional";
 
         private static Vector2[] _anchorsV2 = new Vector2[] {
             new Vector2(1.08f, 1.19f),
