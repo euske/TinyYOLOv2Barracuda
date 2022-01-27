@@ -14,11 +14,13 @@ sealed class VisualizerCpu : MonoBehaviour
     [SerializeField] ResourceSet _resources = null;
     [SerializeField] UI.RawImage _previewUI = null;
     [SerializeField] Marker _markerPrefab = null;
+    [SerializeField] ARSession _session = null;
     [SerializeField] ARCameraManager _cameraManager = null;
 
     // Thresholds are exposed to the runtime UI.
     public float scoreThreshold { set => _scoreThreshold = value; }
     public float overlapThreshold { set => _overlapThreshold = value; }
+    public ARSession session { set => _session = value; }
     public ARCameraManager cameraManager { set => _cameraManager = value; }
 
     #endregion
@@ -84,10 +86,10 @@ sealed class VisualizerCpu : MonoBehaviour
 
     void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
-        Debug.Log("frame received.");
         // Attempt to get the latest camera image. If this method succeeds,
         // it acquires a native resource that must be disposed (see below).
         if (!_cameraSubsystem.TryAcquireLatestCpuImage(out XRCpuImage image)) return;
+        Debug.Log("frame received: "+image.width+"x"+image.height+", "+image.format);
 
         // Once we have a valid XRCpuImage, we can access the individual image "planes"
         // (the separate channels in the image). XRCpuImage.GetPlane provides
@@ -129,8 +131,7 @@ sealed class VisualizerCpu : MonoBehaviour
         // Check if the webcam is ready (needed for macOS support)
         if (_webcamTexture != null) {
             if (_webcamTexture.width <= 16) return;
-
-            // Input buffer update with aspect ratio correction
+            // Input buffer update with aspect ratio correction (480x640, etc.)
             var vflip = _webcamTexture.videoVerticallyMirrored;
             var aspect = (float)_webcamTexture.height / _webcamTexture.width;
             var scale = new Vector2(aspect, vflip ? -1 : 1);
@@ -138,9 +139,11 @@ sealed class VisualizerCpu : MonoBehaviour
             Graphics.Blit(_webcamTexture, _imageBuffer, scale, offset);
         }
         if (_arcamTexture != null) {
+            // AR camera (640x480, etc).
+            var vflip = true;
             var aspect = (float)_arcamTexture.height / _arcamTexture.width;
-            var scale = new Vector2(aspect, 1);
-            var offset = new Vector2((1 - aspect) / 2, 0);
+            var scale = new Vector2(aspect, vflip ? -1 : 1);
+            var offset = new Vector2((1 - aspect) / 2, vflip ? 1 : 0);
             Graphics.Blit(_arcamTexture, _imageBuffer, scale, offset);
         }
 
